@@ -7,6 +7,15 @@ const ffmpegPath = require ('ffmpeg-static')
 
 const app = express();
 
+/*
+task app   mongodb -> CURD
+insert
+delete
+upadte
+read
+all
+CRUD
+*/
 const getResolution = formats =>
 chain(formats)
 .filter('height')
@@ -69,7 +78,7 @@ app.get(
 
                     const videoFormat = chain(formats)
                     .filter(({height, videoCodec}) => (
-                        height === resolution && videoCodec?.startWith('avc1')
+                        height === resolution && videoCodec?.startsWith('avc1')
                     ))
                     .orderBy('fps', 'desc')
                     .head()
@@ -91,32 +100,32 @@ app.get(
 
                 const ffmpegInputOptions= {
                     video:[
-                        '-i', 'pipe:${pipes.video}',
-                        '-i', 'pipe:${pipes.audio}',
+                        '-i', `pipe:${pipes.video}`,
+                        '-i', `pipe:${pipes.audio}`,
                         '-map' , '0:v',
                         '-map' , '1:a',
                         '-c:v' , 'copy',
                         '-c:a' , 'libmp3lame',
                         '-crf' , '27',
                         '-preset' , 'veryfast',
-                        '-movflats' , 'frag_ketframe+empty_moov',
-                        '-f','mp4_'
+                        '-movflats', 'frag_keyframe+empty_moov',
+                        '-f','mp4'
                     ],
                     audio:[
-                        '-i','pipe:${pipe.audio}',
+                        '-i',`pipe:${pipes.audio}`,
                         '-c:a','libm3lame',
                         '-vn',
                         '-ar','44100',
                         '-ac','2',
                         '-b:a', '192k',
-                        '-f', ',mp3'
+                        '-f', 'mp3'
                     ]
                 }
 
                 const ffmpegOption = [
                     ...ffmpegInputOptions[format],
                     '-loglevel', 'error',
-                    '-_'
+                    '-'
                 ]
 
                 const ffmpegProcess = spawn(
@@ -153,5 +162,5 @@ app.get(
 
 const port = 8000;
 app.listen(
-    port,()=> console.log("Server listing on port ${port}"),
+    port,()=> console.log(`Server listing on port ${port}`),
 );
